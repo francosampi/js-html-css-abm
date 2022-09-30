@@ -3,13 +3,13 @@ class Persona {
     id = "";
     nombre = "";
     apellido = "";
-    edad = 15;
+    edad=0;
 
     constructor(_id, _nombre, _apellido, _edad) {
-        this.id=_id;
-        this.nombre=_nombre;
-        this.apellido=_apellido;
-        this.edad=_edad>15?_edad:16;
+        this.id=_id==null?"":_id;
+        this.nombre=_nombre==null?"":_nombre;
+        this.apellido=_apellido==null?"":_apellido;
+        this.edad=_edad>-1?_edad:_edad;
     }
 }
 
@@ -365,17 +365,19 @@ function nuevoID(){
 function datosValidados(){
     const soloLetras=/^[A-Za-z\s]+$/;
 
-    return(
+    if(
         abmInputNombre.value.match(soloLetras) &&
         abmInputApellido.value.match(soloLetras) &&
-        (!isNaN(abmInputEdad.value)) &&
+        (!isNaN(abmInputEdad.value) && parseInt(abmInputEdad.value)>-1) &&
         (abmInputAlterEgo.disabled ? true : abmInputAlterEgo.value.match(soloLetras)) &&
         (abmInputCiudad.disabled ? true : abmInputCiudad.value.match(soloLetras)) &&
         (abmInputPublicado.disabled ? true : (!isNaN(abmInputPublicado.value) && parseInt(abmInputPublicado.value)>1950)) &&
         (abmInputEnemigo.disabled ? true : abmInputEnemigo.value.match(soloLetras)) &&
         (abmInputRobos.disabled ? true : (!isNaN(abmInputRobos.value) && parseInt(abmInputRobos.value)>-1)) &&
         (abmInputAsesinatos.disabled ? true : (!isNaN(abmInputAsesinatos.value) && parseInt(abmInputAsesinatos.value)>-1))
-    );
+    )
+    return true;
+    alert("Faltan datos por validar...");
 }
 
 //RETORNAR UNA PERSONA CREADA POR ABM
