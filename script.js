@@ -52,11 +52,10 @@ let btnAgregar;
 const btnCalcular=document.getElementById("form_datos_btnCalcular");
 const form=document.getElementById("form_datos");
 const formEdadPromedio=document.getElementById("form_datos_edadPromedio");
-let ultimoId=datos.length;
 
 //FILTROS Y TABLA
 let formTabla;
-let indiceSort=1;
+let indiceSort=-1;
 const formFiltro=document.getElementById("form_datos_filtro");
 const formFiltrosTabla=document.getElementById("form_datos_filtrosTabla");
 
@@ -139,6 +138,7 @@ function generarTabla(){
     }
 
     //FILTRAR POR TIPO DE PERSONA
+    //****FILTER
     personasFiltradas = personas.filter(elemento=>{
         return (opcion==0 || (elemento instanceof Heroe && opcion==1) || (elemento instanceof Villano && opcion==2));
     });
@@ -276,6 +276,7 @@ function abrirAbm(_operacion, persona){
 }
 
 //CALCULAR EDAD PROMEDIO
+//****REDUCE
 btnCalcular.addEventListener("click", ()=>{
     let totalEdad=personasFiltradas.reduce((edadTotal, persona)=>{
         return edadTotal += persona.edad;
@@ -291,8 +292,9 @@ abmAgregar.addEventListener("click", ()=>{
     if(confirm("Desea agregar nuevo registro?"))
     {
         let nuevoRegistro=crearPersonaAbm();
-        nuevoRegistro.id=ultimoId+1;
-        ultimoId++;
+        //nuevoRegistro.id=ultimoId+1;
+        //ultimoId++;
+        nuevoRegistro.id=nuevoID();
         personas.push(nuevoRegistro);
         abrirTabla();
     }
@@ -338,6 +340,26 @@ abmEliminar.addEventListener("click", ()=>{
 });
 
 abmCancelar.addEventListener("click", abrirTabla);
+
+//RETORNAR ID UNICO
+function nuevoID(){
+    let id;
+    let existeId=true;
+
+    while(existeId)
+    {
+        id = Math.floor(Math.random()*1000);
+        existeId=false;
+        for(let i=0; i<personas.length; i++){
+            if (personas[i].id==id)
+            {
+                existeId=true;
+                break;
+            }
+        };
+    }
+    return id;
+}
 
 //VALIDAR INPUTS ABM DONDE CORRESPONDA (REGEX)
 function datosValidados(){
@@ -391,7 +413,8 @@ function crearPersonaAbm() {
     return new Persona(...datos);
 }
 
-//USAR MAP PARA CAPITALIZAR STRINGS
+//CAPITALIZAR STRINGS
+//****MAP
 function capitalizarString(_arr){
     _arr.map((elemento, indice)=>{
         if (typeof _arr[indice] === 'string')
@@ -401,7 +424,7 @@ function capitalizarString(_arr){
 
 //ASIGNAR EL EVENTO DE ORDENAMIENTO A CADA BOTON
 function asignarEventoOrden(_arr){
-    for(let i=0;i<_arr.length;i++){
+    for(let i=0; i<_arr.length; i++){
         _arr[i].addEventListener('click', ()=>{
             personas.sort((a, b) => {
                 let paramA = [a.id,a.nombre,a.apellido,a.edad,a.alterego,a.ciudad,a.publicado,a.enemigo,a.robos,a.asesinatos];
