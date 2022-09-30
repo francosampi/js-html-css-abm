@@ -18,10 +18,10 @@ class Heroe extends Persona{
     ciudad="";
     publicado=1941;
 
-    constructor(_id, _nombre, _apellido, _edad, _alterEgo, _ciudad, _publicado)
+    constructor(_id, _nombre, _apellido, _edad, _alterego, _ciudad, _publicado)
     {
         super(_id, _nombre, _apellido, _edad);
-        this.alterego=_alterEgo==null?"":_alterEgo;
+        this.alterego=_alterego==null?"":_alterego;
         this.ciudad=_ciudad==null?"":_ciudad;
         this.publicado=_publicado>1940?_publicado:1941;
     }
@@ -75,7 +75,7 @@ const abmInputNombre=document.getElementById("input_nombre")
 const abmInputApellido=document.getElementById("input_apellido")
 const abmInputEdad=document.getElementById("input_edad");
 const abmInputTipo=document.getElementById("input_tipo");
-const abmInputAlterEgo=document.getElementById("input_alterEgo");
+const abmInputAlterEgo=document.getElementById("input_alterego");
 const abmInputCiudad=document.getElementById("input_ciudad");
 const abmInputPublicado=document.getElementById("input_publicado");
 const abmInputEnemigo=document.getElementById("input_enemigo");
@@ -153,7 +153,7 @@ function generarTabla(){
         escribirTd('nombre', persona.nombre);
         escribirTd('apellido', persona.apellido);
         escribirTd('edad', persona.edad);
-        escribirTd('alterEgo', persona.alterego);
+        escribirTd('alterego', persona.alterego);
         escribirTd('ciudad', persona.ciudad);
         escribirTd('publicado', persona.publicado);
         escribirTd('enemigo', persona.enemigo);
@@ -203,13 +203,11 @@ function rellenarAbm(persona){
     abmInputEdad.value=persona.edad==undefined?"":persona.edad;
     
     if (persona instanceof Heroe)
-        abmInputTipo.selectedIndex=1;
-    else if (persona instanceof Villano)
-        abmInputTipo.selectedIndex=2;
-    else
         abmInputTipo.selectedIndex=0;
+    else if (persona instanceof Villano)
+        abmInputTipo.selectedIndex=1;
 
-    abmInputAlterEgo.value=persona.titulo==undefined?"":persona.alterego;
+    abmInputAlterEgo.value=persona.alterego==undefined?"":persona.alterego;
     abmInputCiudad.value=persona.ciudad==undefined?"":persona.ciudad;
     abmInputPublicado.value=persona.publicado==undefined?"":persona.publicado;
     abmInputEnemigo.value=persona.enemigo==undefined?"":persona.enemigo;
@@ -219,24 +217,65 @@ function rellenarAbm(persona){
 
 //HABILITAR O NO LOS INPUT DEL ABM
 function ajustarAbmSegunTipo() {
-    let boolProf = abmInputTipo.selectedIndex==0 ? false : abmInputTipo.selectedIndex==1;
-    let boolFutb = abmInputTipo.selectedIndex==0 ? false : abmInputTipo.selectedIndex==2;
+    let boolHeroe = abmInputTipo.selectedIndex==0;
+    let boolVillano = abmInputTipo.selectedIndex==1;
 
     //HEROE
-    abmInputAlterEgo.disabled=!boolProf;
-    abmInputCiudad.disabled=!boolProf;
-    abmInputPublicado.disabled=!boolProf;
+    abmInputAlterEgo.disabled=!boolHeroe;
+    abmInputCiudad.disabled=!boolHeroe;
+    abmInputPublicado.disabled=!boolHeroe;
 
     //VILLANO
-    abmInputEnemigo.disabled=!boolFutb;
-    abmInputRobos.disabled=!boolFutb;
-    abmInputAsesinatos.disabled=!boolFutb;
+    abmInputEnemigo.disabled=!boolVillano;
+    abmInputRobos.disabled=!boolVillano;
+    abmInputAsesinatos.disabled=!boolVillano;
 }
 
 //DESHABILITO INPUTS SEGUN TIPO DE PERSONA
 abmInputTipo.addEventListener("change", ()=>{
     ajustarAbmSegunTipo();
 });
+
+//ABRIR TABLA REGISTROS
+function abrirTabla(){
+    abm.style.display="none";
+    form.style.display="";
+    formTabla.style.display="";
+    generarTabla();
+}
+
+//ABRIR ABM - OPERACIONES
+function abrirAbm(_operacion, persona){
+    abm.style.display="";
+    form.style.display="none";
+    formTabla.style.display="none";
+    
+    if (!persona instanceof Persona)
+        return;
+
+    switch(_operacion)
+    {
+        case "alta":
+            abmInputId.value=ultimoId+1;
+            abmInputId.disabled=false;
+            abmAgregar.disabled=false;
+            abmModificar.disabled=true;
+            abmEliminar.disabled=true;
+            rellenarAbm(new Persona);
+        break;
+        case "modificar":
+        case "eliminar":
+            abmInputId.value=persona.id;
+            abmInputId.setAttribute("id", persona.id);
+            abmInputId.disabled=true;
+            abmAgregar.disabled=true;
+            abmModificar.disabled=false;
+            abmEliminar.disabled=false;
+            rellenarAbm(persona);
+        break;
+    }
+    ajustarAbmSegunTipo();
+}
 
 //CALCULAR EDAD PROMEDIO
 btnCalcular.addEventListener("click", ()=>{
@@ -245,6 +284,112 @@ btnCalcular.addEventListener("click", ()=>{
     }, 0);
     formEdadPromedio.value=(totalEdad/=personasFiltradas.length).toFixed(2);
 });
+
+//ABM - OPERACIONES
+abmAgregar.addEventListener("click", ()=>{
+    if (!datosValidados())
+        return;
+
+    if(confirm("Desea agregar nuevo registro?"))
+    {
+        ultimoId++;
+        personas.push(crearPersonaAbm());
+        abrirTabla();
+    }
+});
+
+abmModificar.addEventListener("click", ()=>{
+    if (!datosValidados())
+        return;
+
+    let persona;
+    const idPersona=abmInputId.id;
+
+    personas.forEach(item => {
+        if (item.id==idPersona)
+            persona=item;
+    });
+
+    if(confirm("Desea modificar este registro? ID: "+idPersona))
+    {
+        const index=personas.indexOf(persona);
+        if (~index)
+            personas[index]=crearPersonaAbm();
+        abrirTabla();
+    }
+});
+
+abmEliminar.addEventListener("click", ()=>{
+    let persona;
+    const idPersona=abmInputId.id;
+
+    personas.forEach(item => {
+        if (item.id==idPersona)
+            persona=item;
+    });
+
+    if(confirm("Desea borrar este registro? ID: "+idPersona))
+    {
+        const index = personas.indexOf(persona);
+        if (~index)
+            personas.splice(index, 1);
+        abrirTabla();
+    }
+});
+
+abmCancelar.addEventListener("click", abrirTabla);
+
+//VALIDAR INPUTS ABM DONDE CORRESPONDA (REGEX)
+function datosValidados(){
+    const soloLetras=/^[A-Za-z\s]+$/;
+
+    return(
+        abmInputNombre.value.match(soloLetras) &&
+        abmInputApellido.value.match(soloLetras) &&
+        (!isNaN(abmInputEdad.value)) &&
+        (abmInputAlterEgo.disabled ? true : abmInputAlterEgo.value.match(soloLetras)) &&
+        (abmInputCiudad.disabled ? true : abmInputCiudad.value.match(soloLetras)) &&
+        (abmInputPublicado.disabled ? true : (!isNaN(abmInputPublicado.value) && parseInt(abmInputPublicado.value)>1950)) &&
+        (abmInputEnemigo.disabled ? true : abmInputEnemigo.value.match(soloLetras)) &&
+        (abmInputRobos.disabled ? true : (!isNaN(abmInputRobos.value) && parseInt(abmInputRobos.value)>-1)) &&
+        (abmInputAsesinatos.disabled ? true : (!isNaN(abmInputAsesinatos.value) && parseInt(abmInputAsesinatos.value)>-1))
+    );
+}
+
+//RETORNAR UNA PERSONA CREADA POR ABM
+function crearPersonaAbm() {
+    let datos=[
+        parseInt(abmInputId.value),
+        abmInputNombre.value.trim(),
+        abmInputApellido.value.trim(),
+        parseInt(abmInputEdad.value)
+    ];
+    capitalizarString(datos);
+
+    if (abmInputTipo.selectedIndex==0)
+    {
+        let datosHeroe=[
+            abmInputAlterEgo.value.trim(),
+            abmInputCiudad.value.trim(),
+            parseInt(abmInputPublicado.value)
+        ];
+        capitalizarString(datosHeroe);
+
+        return new Heroe(...datos, ...datosHeroe);
+    }
+    else if (abmInputTipo.selectedIndex==1)
+    {
+        let datosVillano=[
+            abmInputEnemigo.value.trim(),
+            parseInt(abmInputRobos.value),
+            parseInt(abmInputAsesinatos.value)
+        ];
+        capitalizarString(datosVillano);
+
+        return new Villano(...datos, ...datosVillano);
+    }
+    return new Persona(...datos);
+}
 
 //USAR MAP PARA CAPITALIZAR STRINGS
 function capitalizarString(_arr){
@@ -259,8 +404,8 @@ function asignarEventoOrden(_arr){
     for(let i=0;i<_arr.length;i++){
         _arr[i].addEventListener('click', ()=>{
             personas.sort((a, b) => {
-                let paramA = [a.id,a.nombre,a.apellido,a.edad,a.titulo,a.facultad,a.añoGraduacion,a.equipo,a.posicion,a.cantidadGoles];
-                let paramB = [b.id,b.nombre,b.apellido,b.edad,b.titulo,b.facultad,b.añoGraduacion,b.equipo,b.posicion,b.cantidadGoles];
+                let paramA = [a.id,a.nombre,a.apellido,a.edad,a.alterego,a.ciudad,a.publicado,a.enemigo,a.robos,a.asesinatos];
+                let paramB = [b.id,b.nombre,b.apellido,b.edad,b.alterego,b.ciudad,b.publicado,b.enemigo,b.robos,b.asesinatos];
                 
                 if(paramA[i]){
                     if (paramA[i] > paramB[i])
