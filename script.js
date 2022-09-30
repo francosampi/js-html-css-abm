@@ -256,8 +256,7 @@ function abrirAbm(_operacion, persona){
     switch(_operacion)
     {
         case "alta":
-            abmInputId.value=ultimoId+1;
-            abmInputId.disabled=false;
+            abmInputId.value="";
             abmAgregar.disabled=false;
             abmModificar.disabled=true;
             abmEliminar.disabled=true;
@@ -267,7 +266,6 @@ function abrirAbm(_operacion, persona){
         case "eliminar":
             abmInputId.value=persona.id;
             abmInputId.setAttribute("id", persona.id);
-            abmInputId.disabled=true;
             abmAgregar.disabled=true;
             abmModificar.disabled=false;
             abmEliminar.disabled=false;
@@ -292,8 +290,10 @@ abmAgregar.addEventListener("click", ()=>{
 
     if(confirm("Desea agregar nuevo registro?"))
     {
+        let nuevoRegistro=crearPersonaAbm();
+        nuevoRegistro.id=ultimoId+1;
         ultimoId++;
-        personas.push(crearPersonaAbm());
+        personas.push(nuevoRegistro);
         abrirTabla();
     }
 });
